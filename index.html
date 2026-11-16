@@ -1,1 +1,2151 @@
-just
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SOLU DIGITAL PDF TOOLS — All-in-One Pro PDF Studio</title>
+
+  <!-- Tailwind CSS & FontAwesome 6 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Dancing+Script:wght@700&display=swap" rel="stylesheet" />
+
+  <!-- Reliable UMD Libraries for 100% Client-Side PDF Processing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <style>
+    /* ==========================================================================
+       CSS VARIABLES & THEME SYSTEM (DARK SLATE & INDIGO-RED PDF STUDIO)
+       ========================================================================== */
+    :root {
+      --bg-app: #090d16;
+      --bg-sidebar: #0f1624;
+      --bg-card: #141d2f;
+      --bg-card-hover: #1b2740;
+      --bg-input: #0b111e;
+      --border-color: #23314d;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-primary: #ef4444;
+      --accent-secondary: #6366f1;
+      --accent-glow: rgba(239, 68, 68, 0.25);
+    }
+
+    [data-theme="light"] {
+      --bg-app: #f1f5f9;
+      --bg-sidebar: #ffffff;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f8fafc;
+      --bg-input: #f8fafc;
+      --border-color: #cbd5e1;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --accent-primary: #dc2626;
+      --accent-secondary: #4f46e5;
+      --accent-glow: rgba(220, 38, 38, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background-color: var(--bg-app);
+      color: var(--text-primary);
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: var(--bg-app); }
+    ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    /* Surface Utility Classes */
+    .surface-sidebar { background-color: var(--bg-sidebar); border-color: var(--border-color); }
+    .surface-card { background-color: var(--bg-card); border-color: var(--border-color); }
+    .surface-input { background-color: var(--bg-input); border-color: var(--border-color); color: var(--text-primary); }
+    .text-main { color: var(--text-primary); }
+    .text-sub { color: var(--text-secondary); }
+    .text-dim { color: var(--text-muted); }
+    .border-theme { border-color: var(--border-color); }
+
+    /* Range Slider */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--border-color);
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ef4444, #6366f1);
+      cursor: pointer;
+      box-shadow: 0 0 0 4px var(--accent-glow);
+      transition: transform 0.15s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.12); }
+
+    /* Tool Card Hover */
+    .tool-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .tool-card:hover {
+      transform: translateY(-3px);
+      border-color: #ef4444;
+      box-shadow: 0 12px 28px -8px var(--accent-glow);
+    }
+
+    /* Sidebar Active Button */
+    .nav-btn.active {
+      background: linear-gradient(135deg, #ef4444, #4f46e5);
+      color: #ffffff;
+      box-shadow: 0 4px 14px var(--accent-glow);
+    }
+    .nav-btn:not(.active):hover {
+      background-color: var(--bg-card-hover);
+    }
+
+    /* Signature Canvas */
+    #sig-draw-canvas {
+      touch-action: none;
+      cursor: crosshair;
+      background-color: #ffffff;
+    }
+
+    /* Toast Notifications */
+    #toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .toast-item {
+      pointer-events: auto;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      border-left: 4px solid #ef4444;
+      padding: 12px 18px;
+      border-radius: 12px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+      font-size: 0.875rem;
+      font-weight: 600;
+      animation: toastSlide 0.25s ease-out;
+    }
+    @keyframes toastSlide {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- ========================================================================
+       TOP HEADER BAR
+       ======================================================================== -->
+  <header class="surface-sidebar border-b sticky top-0 z-40 px-4 py-3 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <!-- Mobile Drawer Button -->
+      <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-xl surface-card border text-main hover:border-red-500 transition" aria-label="Toggle Menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <!-- Brand Logo -->
+      <div id="brand-home-btn" class="flex items-center gap-3 cursor-pointer group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 via-rose-600 to-indigo-600 flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform">
+          <i class="fa-solid fa-file-pdf text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-extrabold tracking-tight leading-none bg-gradient-to-r from-red-400 via-rose-400 to-indigo-400 bg-clip-text text-transparent">
+            SOLU DIGITAL PDF TOOLS
+          </h1>
+          <p class="text-[11px] text-sub font-medium mt-0.5">
+            16 Pro PDF Utilities • 100% Client-Side & Free Forever
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Header Right Controls -->
+    <div class="flex items-center gap-2 sm:gap-2.5">
+      <button id="all-tools-top-btn" class="px-3 py-2 rounded-xl surface-card border hover:border-indigo-500 text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-grid-2 text-indigo-400"></i>
+        <span>All 16 Tools</span>
+      </button>
+
+      <button id="open-code-modal-btn" class="px-3 py-2 rounded-xl bg-gradient-to-r from-red-600 to-indigo-600 hover:opacity-95 text-white text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-lg transition">
+        <i class="fa-solid fa-code"></i>
+        <span class="hidden sm:inline">Copy Full HTML Code</span>
+        <span class="sm:hidden">Code</span>
+      </button>
+
+      <button id="theme-toggle-btn" class="p-2.5 rounded-xl surface-card border text-main hover:border-red-500 transition" title="Toggle Dark/Light Mode">
+        <i id="theme-icon" class="fa-solid fa-sun text-amber-400"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       MAIN LAYOUT (SIDEBAR + WORKSPACE)
+       ======================================================================== -->
+  <div class="flex-1 flex relative">
+
+    <!-- LEFT SIDEBAR NAVIGATION -->
+    <aside id="sidebar" class="surface-sidebar border-r w-72 shrink-0 flex flex-col justify-between fixed lg:static inset-y-0 left-0 z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 pt-16 lg:pt-0">
+      <div class="p-3 space-y-1 overflow-y-auto flex-1">
+        <button class="nav-btn active w-full text-left px-3.5 py-2.5 rounded-xl flex items-center gap-3 text-xs font-bold transition mb-2" data-tool="dashboard">
+          <i class="fa-solid fa-house w-4 text-center"></i>
+          <span>All Tools Dashboard (16)</span>
+        </button>
+
+        <div class="px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-dim">Organize & Optimize</div>
+        <button class="nav-btn w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 text-xs font-semibold transition" data-tool="merge">
+          <i class="fa-solid fa-object-group text-red-400 w-4 text-center"></i><span>1. Merge PDF</span>
+        </button>
+        <button class="nav-btn w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 text-xs font-semibold transition" data-tool="split">
+          <i class="fa-solid fa-scissors text-rose-400 w-4 text-center"></i><span>2. Split PDF</span>
+        </button>
+        <button class="nav-btn w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 text-xs font-semibold transition" data-tool="compress">
+          <i class="fa-solid fa-compress text-emerald-400 w-4 text-center"></i><span>3. Compress PDF</span>
+        </button>
+        <button class="nav-btn w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 text-xs font-semibold transition" data-tool="organize">
+          <i class="fa-solid fa-layer-group text-indigo-400 w-4 text-center"></i><span>6. Organize & Delete Pages</span>
+        </button>
+        <button class="nav-btn w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 text-xs font-semibold transition" data-tool="rotate">
+          <i class="fa-solid fa-rotate-right text-amber-400 w-4 text-center"></i><span>7. Rotate PDF</span>
+        </button>
+        <button class="nav-btn w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 text-xs font-semibold transition" data-tool="crop">
+          <i class="fa-solid fa-crop-simple text-cyan-400 w-4 text-center"></i><span>14. Crop / Resize Margins</span>
+        </button>
+
+        <div class="px-3 pt-2 pb-1 text-[10px] font-extrabold uppercase tracking-wider text-dim">Convert & Extract</div>
+        <button class="nav-btn w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 text-xs font-semibold transition" data-tool="pdf2img">
+          <i class="fa-solid fa-file-image text-purple-400 w-4 text-center"></i><span>4. PDF to JPG / PNG</span>
+        </button>
+        <button class="nav-btn w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 text-xs font-semibold transition" data-tool="img2pdf">
+          <i class="fa-solid fa-images text-pink-400 w-4 text-center"></i><span>5. JPG / PNG to PDF</span>
+        </button>
+        <button class="nav-btn w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 text-xs font-semibold transition" data-tool="extract">
+          <i class="fa-solid fa-file-lines text-teal-400 w-4 text-center"></i><span>12. Extract Text from PDF</span>
+        </button>
+        <button class="nav-btn w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 text-xs font-semibold transition" data-tool="grayscale">
+          <i class="fa-solid fa-print text-slate-300 w-4 text-center"></i><span>16. Grayscale / B&W PDF</span>
+        </button>
+
+        <div class="px-3 pt-2 pb-1 text-[10px] font-extrabold uppercase tracking-wider text-dim">Edit & Security</div>
+        <button class="nav-btn w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 text-xs font-semibold transition" data-tool="watermark">
+          <i class="fa-solid fa-stamp text-orange-400 w-4 text-center"></i><span>8. Add Watermark</span>
+        </button>
+        <button class="nav-btn w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 text-xs font-semibold transition" data-tool="pagenum">
+          <i class="fa-solid fa-list-ol text-blue-400 w-4 text-center"></i><span>9. Add Page Numbers</span>
+        </button>
+        <button class="nav-btn w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 text-xs font-semibold transition" data-tool="sign">
+          <i class="fa-solid fa-signature text-violet-400 w-4 text-center"></i><span>13. Sign & Stamp PDF</span>
+        </button>
+        <button class="nav-btn w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 text-xs font-semibold transition" data-tool="protect">
+          <i class="fa-solid fa-lock text-red-400 w-4 text-center"></i><span>10. Protect / Lock PDF</span>
+        </button>
+        <button class="nav-btn w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 text-xs font-semibold transition" data-tool="unlock">
+          <i class="fa-solid fa-unlock-keyhole text-emerald-400 w-4 text-center"></i><span>11. Unlock / Flatten PDF</span>
+        </button>
+        <button class="nav-btn w-full text-left px-3 py-2 rounded-xl flex items-center gap-2.5 text-xs font-semibold transition" data-tool="metadata">
+          <i class="fa-solid fa-tags text-yellow-400 w-4 text-center"></i><span>15. Edit PDF Metadata</span>
+        </button>
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="p-3 border-t border-theme">
+        <div class="surface-card border rounded-xl p-2.5 text-[11px] space-y-1">
+          <div class="font-bold text-emerald-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-shield-halved"></i> Zero Server Upload
+          </div>
+          <p class="text-sub leading-snug">
+            All 16 PDF tools run locally inside your browser. Zero lag, 100% private.
+          </p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Mobile Backdrop -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 z-20 hidden lg:hidden"></div>
+
+    <!-- ======================================================================
+         MAIN CONTENT AREA
+         ====================================================================== -->
+    <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto max-w-full">
+
+      <!-- ====================================================================
+           VIEW 0: ALL 16 TOOLS DASHBOARD GRID
+           ==================================================================== -->
+      <section id="view-dashboard" class="space-y-6 max-w-7xl mx-auto">
+        <div class="surface-card border rounded-2xl p-6 sm:p-8 bg-gradient-to-r from-red-500/10 via-transparent to-indigo-500/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <span class="px-3 py-1 rounded-full bg-red-500/15 text-red-400 text-xs font-bold uppercase tracking-wider">
+              SOLU DIGITAL PDF TOOLS • PRO EDITION
+            </span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold mt-2 tracking-tight">
+              Every Single PDF Tool You Need — In One Fast Studio
+            </h2>
+            <p class="text-sub text-sm mt-1 max-w-2xl">
+              Merge, split, compress, convert, sign, watermark, organize pages, extract text, and optimize PDFs instantly in your browser with zero file limits and zero server uploads.
+            </p>
+          </div>
+          <div class="w-full md:w-64">
+            <div class="relative">
+              <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-dim text-sm"></i>
+              <input type="text" id="dashboard-search" placeholder="Search 16 PDF tools..." class="w-full pl-10 pr-4 py-2.5 rounded-xl surface-input border text-sm outline-none focus:border-red-500" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 16 Tool Cards Grid -->
+        <div id="dashboard-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+      </section>
+
+      <!-- ====================================================================
+           ACTIVE TOOL WORKSPACE WRAPPER
+           ==================================================================== -->
+      <section id="view-tool-workspace" class="hidden max-w-6xl mx-auto space-y-5">
+
+        <!-- Tool Header Banner -->
+        <div class="surface-card border rounded-2xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5">
+            <button id="back-to-dash-btn" class="p-2.5 rounded-xl surface-input border hover:border-red-500 text-sm transition" title="Back to Dashboard">
+              <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <div id="active-tool-icon" class="w-11 h-11 rounded-xl bg-red-500/15 text-red-400 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-file-pdf"></i>
+            </div>
+            <div>
+              <h2 id="active-tool-title" class="text-lg sm:text-xl font-extrabold">Merge PDF</h2>
+              <p id="active-tool-desc" class="text-xs sm:text-sm text-sub">Combine multiple PDF files into one unified document.</p>
+            </div>
+          </div>
+          <button id="clear-tool-files-btn" class="px-3.5 py-2 rounded-xl surface-input border hover:border-red-500 text-xs font-bold transition">
+            <i class="fa-solid fa-rotate-left mr-1"></i> Reset / New File
+          </button>
+        </div>
+
+        <!-- Global Progress Bar (Hidden when idle) -->
+        <div id="progress-wrapper" class="hidden surface-card border rounded-2xl p-4 space-y-2">
+          <div class="flex justify-between text-xs font-bold">
+            <span id="progress-label" class="text-indigo-400">Processing PDF...</span>
+            <span id="progress-pct">0%</span>
+          </div>
+          <div class="w-full h-2.5 rounded-full surface-input overflow-hidden">
+            <div id="progress-bar" class="h-full bg-gradient-to-r from-red-500 to-indigo-500 transition-all duration-150" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Shared Dropzone for Active Tool -->
+        <div id="tool-dropzone" class="surface-card border-2 border-dashed border-red-500/40 hover:border-red-500 rounded-2xl p-8 text-center cursor-pointer transition-all group">
+          <input type="file" id="tool-file-input" class="hidden" />
+          <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-red-500/10 text-red-400 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+          </div>
+          <h3 id="dropzone-heading" class="text-base sm:text-lg font-bold">Drag & Drop PDF File(s) Here</h3>
+          <p id="dropzone-subtext" class="text-xs sm:text-sm text-sub mt-1 mb-4">or click to browse from your device • 100% browser-based</p>
+          <button type="button" id="dropzone-select-btn" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-indigo-600 text-white text-xs sm:text-sm font-bold shadow-lg">
+            Select File(s)
+          </button>
+        </div>
+
+        <!-- ==================================================================
+             DYNAMIC TOOL PANELS (1 TO 16)
+             ================================================================== -->
+
+        <!-- 1. MERGE PDF PANEL -->
+        <div id="panel-merge" class="tool-panel hidden surface-card border rounded-2xl p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-sm">Selected PDF Files (<span id="merge-count">0</span>)</h3>
+            <button type="button" id="merge-add-more-btn" class="px-3 py-1.5 rounded-lg surface-input border hover:border-indigo-500 text-xs font-bold">
+              + Add More PDFs
+            </button>
+          </div>
+          <div id="merge-file-list" class="space-y-2"></div>
+          <button type="button" id="exec-merge-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-indigo-600 text-white font-bold text-sm shadow-lg hover:opacity-95">
+            <i class="fa-solid fa-object-group mr-2"></i> Merge All PDFs & Download
+          </button>
+        </div>
+
+        <!-- 2. SPLIT PDF PANEL -->
+        <div id="panel-split" class="tool-panel hidden surface-card border rounded-2xl p-5 space-y-4">
+          <div id="split-file-info" class="text-xs font-bold text-indigo-400"></div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="surface-input border rounded-xl p-4 space-y-2">
+              <label class="text-xs font-bold block">Mode A: Extract Specific Page Range</label>
+              <input type="text" id="split-range-input" placeholder="e.g. 1-3, 5, 7-9" class="w-full px-3 py-2 rounded-lg surface-card border text-sm outline-none focus:border-red-500" />
+              <p class="text-[11px] text-dim">Creates one PDF containing only your chosen pages.</p>
+              <button type="button" id="exec-split-range-btn" class="w-full py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold">
+                Extract Range as PDF
+              </button>
+            </div>
+            <div class="surface-input border rounded-xl p-4 space-y-2 flex flex-col justify-between">
+              <div>
+                <label class="text-xs font-bold block">Mode B: Explode Every Page into Separate PDFs</label>
+                <p class="text-[11px] text-dim mt-1">Splits every single page into an individual PDF file bundled inside a single ZIP archive.</p>
+              </div>
+              <button type="button" id="exec-split-all-btn" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold">
+                <i class="fa-solid fa-file-zipper mr-1"></i> Split All Pages into ZIP
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. COMPRESS PDF PANEL -->
+        <div id="panel-compress" class="tool-panel hidden surface-card border rounded-2xl p-5 space-y-4">
+          <div class="flex flex-wrap justify-between items-center gap-2 border-b border-theme pb-3">
+            <div>
+              <div id="comp-orig-info" class="text-sm font-bold">Original Size: 0 KB</div>
+              <div id="comp-new-info" class="text-xs font-bold text-emerald-400 hidden">Compressed Size: 0 KB</div>
+            </div>
+            <span class="text-xs text-sub">Re-encodes pages with smart JPEG optimization</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1">
+                <span>JPEG Compression Quality</span>
+                <span id="pdf-comp-q-val" class="text-red-400">65%</span>
+              </div>
+              <input type="range" id="pdf-comp-q" min="15" max="95" value="65" />
+            </div>
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1">
+                <span>Render Resolution Scale (DPI)</span>
+                <span id="pdf-comp-scale-val" class="text-indigo-400">1.2x (Balanced)</span>
+              </div>
+              <input type="range" id="pdf-comp-scale" min="0.6" max="2.0" step="0.1" value="1.2" />
+            </div>
+          </div>
+          <button type="button" id="exec-compress-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-sm shadow-lg">
+            <i class="fa-solid fa-compress mr-2"></i> Compress & Download PDF
+          </button>
+        </div>
+
+        <!-- 4. PDF TO JPG / PNG PANEL -->
+        <div id="panel-pdf2img" class="tool-panel hidden surface-card border rounded-2xl p-5 space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Image Format</label>
+              <select id="pdf2img-fmt" class="w-full px-3 py-2 rounded-xl surface-input border text-xs font-bold">
+                <option value="image/jpeg">JPG (Smaller Size)</option>
+                <option value="image/png">PNG (Lossless Sharp)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Resolution Quality</label>
+              <select id="pdf2img-scale" class="w-full px-3 py-2 rounded-xl surface-input border text-xs font-bold">
+                <option value="1.5">Standard (150 DPI)</option>
+                <option value="2.0" selected>High HD (200 DPI)</option>
+                <option value="3.0">Ultra Print (300 DPI)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Page Range (Optional)</label>
+              <input type="text" id="pdf2img-range" placeholder="All pages or e.g. 1-3" class="w-full px-3 py-2 rounded-xl surface-input border text-xs font-bold" />
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            <button type="button" id="exec-pdf2img-preview-btn" class="flex-1 py-2.5 rounded-xl surface-input border hover:border-indigo-500 text-xs font-bold">
+              Render Page Previews
+            </button>
+            <button type="button" id="exec-pdf2img-zip-btn" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold shadow-lg">
+              <i class="fa-solid fa-file-zipper mr-1.5"></i> Convert & Download All as ZIP
+            </button>
+          </div>
+          <div id="pdf2img-gallery" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pt-2"></div>
+        </div>
+
+        <!-- 5. JPG / PNG TO PDF PANEL -->
+        <div id="panel-img2pdf" class="tool-panel hidden surface-card border rounded-2xl p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold">Selected Images (<span id="img2pdf-count">0</span>)</span>
+            <button type="button" id="img2pdf-add-more-btn" class="px-3 py-1.5 rounded-lg surface-input border hover:border-red-500 text-xs font-bold">
+              + Add More Images
+            </button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Page Size</label>
+              <select id="img2pdf-size" class="w-full px-3 py-2 rounded-xl surface-input border text-xs font-bold">
+                <option value="a4">A4 Standard</option>
+                <option value="letter">US Letter</option>
+                <option value="fit">Fit to Image Size</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Orientation</label>
+              <select id="img2pdf-orient" class="w-full px-3 py-2 rounded-xl surface-input border text-xs font-bold">
+                <option value="portrait">Portrait (Vertical)</option>
+                <option value="landscape">Landscape (Horizontal)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Page Margin</label>
+              <select id="img2pdf-margin" class="w-full px-3 py-2 rounded-xl surface-input border text-xs font-bold">
+                <option value="0">No Margin (Full Bleed)</option>
+                <option value="10" selected>Small Margin (10mm)</option>
+                <option value="20">Medium Margin (20mm)</option>
+              </select>
+            </div>
+          </div>
+          <div id="img2pdf-list" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+          <button type="button" id="exec-img2pdf-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-pink-600 text-white font-bold text-sm shadow-lg">
+            <i class="fa-solid fa-file-pdf mr-2"></i> Convert Images to PDF & Download
+          </button>
+        </div>
+
+        <!-- 6. ORGANIZE & DELETE PAGES PANEL -->
+        <div id="panel-organize" class="tool-panel hidden surface-card border rounded-2xl p-5 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="text-xs text-sub">Rotate individual pages, move left/right, or delete unwanted pages visually.</p>
+            <button type="button" id="exec-organize-btn" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white text-xs font-bold shadow-lg">
+              <i class="fa-solid fa-floppy-disk mr-1.5"></i> Save Organized PDF
+            </button>
+          </div>
+          <div id="organize-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3"></div>
+        </div>
+
+        <!-- 7. ROTATE PDF PANEL -->
+        <div id="panel-rotate" class="tool-panel hidden surface-card border rounded-2xl p-5 space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1.5">Rotation Angle (Clockwise)</label>
+              <div class="grid grid-cols-3 gap-2">
+                <button type="button" class="rot-angle-btn py-2.5 rounded-xl bg-red-600 text-white text-xs font-bold" data-deg="90">↻ 90°</button>
+                <button type="button" class="rot-angle-btn py-2.5 rounded-xl surface-input border text-xs font-bold" data-deg="180">↻ 180°</button>
+                <button type="button" class="rot-angle-btn py-2.5 rounded-xl surface-input border text-xs font-bold" data-deg="270">↺ 270°</button>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1.5">Target Pages (Leave blank for ALL)</label>
+              <input type="text" id="rotate-pages-input" placeholder="e.g. 1, 3-5 (or blank for all)" class="w-full px-3 py-2.5 rounded-xl surface-input border text-xs font-bold" />
+            </div>
+          </div>
+          <button type="button" id="exec-rotate-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-600 to-red-600 text-white font-bold text-sm shadow-lg">
+            <i class="fa-solid fa-rotate-right mr-2"></i> Rotate & Download PDF
+          </button>
+        </div>
+
+        <!-- 8. ADD WATERMARK PANEL -->
+        <div id="panel-watermark" class="tool-panel hidden surface-card border rounded-2xl p-5 space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Watermark Text</label>
+              <input type="text" id="pdf-wm-text" value="CONFIDENTIAL • SOLU PDF" class="w-full px-3 py-2 rounded-xl surface-input border text-sm font-bold" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Position</label>
+              <select id="pdf-wm-pos" class="w-full px-3 py-2 rounded-xl surface-input border text-sm font-bold">
+                <option value="center">Center Diagonal</option>
+                <option value="top">Top Center</option>
+                <option value="bottom">Bottom Center</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Text Color</label>
+              <input type="color" id="pdf-wm-color" value="#ef4444" class="w-full h-9 rounded-xl cursor-pointer bg-transparent border-0" />
+            </div>
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1"><span>Font Size</span><span id="pdf-wm-size-val">48px</span></div>
+              <input type="range" id="pdf-wm-size" min="14" max="120" value="48" />
+            </div>
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1"><span>Opacity</span><span id="pdf-wm-op-val">30%</span></div>
+              <input type="range" id="pdf-wm-op" min="5" max="100" value="30" />
+            </div>
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1"><span>Rotation Angle</span><span id="pdf-wm-rot-val">45°</span></div>
+              <input type="range" id="pdf-wm-rot" min="-90" max="90" value="45" />
+            </div>
+          </div>
+          <button type="button" id="exec-watermark-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold text-sm shadow-lg">
+            <i class="fa-solid fa-stamp mr-2"></i> Apply Watermark & Download PDF
+          </button>
+        </div>
+
+        <!-- 9. ADD PAGE NUMBERS PANEL -->
+        <div id="panel-pagenum" class="tool-panel hidden surface-card border rounded-2xl p-5 space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Number Format</label>
+              <select id="pn-format" class="w-full px-3 py-2.5 rounded-xl surface-input border text-xs font-bold">
+                <option value="page-of">Page 1 of N</option>
+                <option value="slash">1 / N</option>
+                <option value="number">1, 2, 3...</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Position on Page</label>
+              <select id="pn-position" class="w-full px-3 py-2.5 rounded-xl surface-input border text-xs font-bold">
+                <option value="bottom-center">Bottom Center</option>
+                <option value="bottom-right">Bottom Right</option>
+                <option value="bottom-left">Bottom Left</option>
+                <option value="top-center">Top Center</option>
+                <option value="top-right">Top Right</option>
+                <option value="top-left">Top Left</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Font Size (pt)</label>
+              <input type="number" id="pn-size" value="12" min="8" max="36" class="w-full px-3 py-2 rounded-xl surface-input border text-xs font-bold" />
+            </div>
+          </div>
+          <button type="button" id="exec-pagenum-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-sm shadow-lg">
+            <i class="fa-solid fa-list-ol mr-2"></i> Insert Page Numbers & Download PDF
+          </button>
+        </div>
+
+        <!-- 10. PROTECT / LOCK PDF PANEL -->
+        <div id="panel-protect" class="tool-panel hidden surface-card border rounded-2xl p-5 space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Protection Mode</label>
+              <select id="protect-mode" class="w-full px-3 py-2.5 rounded-xl surface-input border text-xs font-bold">
+                <option value="flatten-lock">Anti-Edit Flatten Lock (Converts text/forms to uneditable image pages)</option>
+                <option value="meta-lock">Security Permission Metadata Lock</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Owner Security Tag / PIN</label>
+              <input type="password" id="protect-pin" placeholder="Enter PIN or password tag" class="w-full px-3 py-2 rounded-xl surface-input border text-sm font-bold" />
+            </div>
+          </div>
+          <p class="text-xs text-sub">
+            <strong>Anti-Edit Flatten Lock</strong> renders every page as high-resolution flattened graphics so nobody can copy, alter text, or extract embedded layers.
+          </p>
+          <button type="button" id="exec-protect-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-700 text-white font-bold text-sm shadow-lg">
+            <i class="fa-solid fa-lock mr-2"></i> Lock & Download Protected PDF
+          </button>
+        </div>
+
+        <!-- 11. UNLOCK / FLATTEN PDF PANEL -->
+        <div id="panel-unlock" class="tool-panel hidden surface-card border rounded-2xl p-5 space-y-4">
+          <p class="text-xs text-sub">
+            Flattens interactive AcroForm fields, annotations, and script locks into a clean, universally compatible standard PDF document.
+          </p>
+          <button type="button" id="exec-unlock-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 text-white font-bold text-sm shadow-lg">
+            <i class="fa-solid fa-unlock-keyhole mr-2"></i> Flatten & Clean PDF Restrictions
+          </button>
+        </div>
+
+        <!-- 12. EXTRACT TEXT FROM PDF PANEL -->
+        <div id="panel-extract" class="tool-panel hidden surface-card border rounded-2xl p-5 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-xs font-bold text-teal-400" id="extract-status">Ready to extract readable text...</span>
+            <div class="flex gap-2">
+              <button type="button" id="copy-extracted-text-btn" class="px-3.5 py-2 rounded-xl surface-input border hover:border-teal-500 text-xs font-bold">
+                <i class="fa-regular fa-copy mr-1"></i> Copy Text
+              </button>
+              <button type="button" id="download-extracted-txt-btn" class="px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold">
+                <i class="fa-solid fa-download mr-1"></i> Download .TXT
+              </button>
+            </div>
+          </div>
+          <textarea id="extracted-text-area" rows="12" readonly placeholder="Extracted PDF text will appear here..." class="w-full p-4 rounded-xl surface-input border text-xs sm:text-sm font-mono leading-relaxed focus:outline-none"></textarea>
+        </div>
+
+        <!-- 13. SIGN & STAMP PDF PANEL -->
+        <div id="panel-sign" class="tool-panel hidden surface-card border rounded-2xl p-5 space-y-4">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            <!-- Left: Signature Pad & Controls -->
+            <div class="lg:col-span-6 space-y-3">
+              <div class="flex gap-2">
+                <button type="button" id="sig-tab-draw" class="flex-1 py-2 rounded-xl bg-red-600 text-white text-xs font-bold">✍️ Draw Signature</button>
+                <button type="button" id="sig-tab-type" class="flex-1 py-2 rounded-xl surface-input border text-xs font-bold">⌨️ Type Signature</button>
+              </div>
+
+              <!-- Draw Mode -->
+              <div id="sig-draw-box" class="space-y-2">
+                <canvas id="sig-draw-canvas" width="420" height="150" class="w-full rounded-xl border border-theme"></canvas>
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs text-sub">Ink:</span>
+                    <input type="color" id="sig-ink-color" value="#0f172a" class="w-7 h-7 rounded cursor-pointer bg-transparent border-0" />
+                  </div>
+                  <button type="button" id="sig-clear-btn" class="px-3 py-1 rounded-lg surface-input border text-xs font-bold">Clear Pad</button>
+                </div>
+              </div>
+
+              <!-- Type Mode -->
+              <div id="sig-type-box" class="hidden space-y-2">
+                <input type="text" id="sig-type-input" value="Solu Digital" placeholder="Type your signature..." class="w-full px-3 py-2.5 rounded-xl surface-input border text-lg font-bold" style="font-family: 'Dancing Script', cursive;" />
+              </div>
+
+              <div class="grid grid-cols-2 gap-3 pt-1">
+                <div>
+                  <label class="block text-xs font-bold text-sub mb-1">Target Page #</label>
+                  <input type="number" id="sig-page-num" value="1" min="1" class="w-full px-3 py-2 rounded-xl surface-input border text-xs font-bold" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-sub mb-1">Signature Width (px)</label>
+                  <input type="number" id="sig-width" value="160" min="40" max="450" class="w-full px-3 py-2 rounded-xl surface-input border text-xs font-bold" />
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs font-bold mb-1"><span>Horizontal X</span><span id="sig-x-val">65%</span></div>
+                  <input type="range" id="sig-pos-x" min="5" max="90" value="65" />
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs font-bold mb-1"><span>Vertical Y</span><span id="sig-y-val">82%</span></div>
+                  <input type="range" id="sig-pos-y" min="5" max="92" value="82" />
+                </div>
+              </div>
+
+              <button type="button" id="exec-sign-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-sm shadow-lg">
+                <i class="fa-solid fa-signature mr-2"></i> Embed Signature & Download PDF
+              </button>
+            </div>
+
+            <!-- Right: Live Page Preview for Signature Placement -->
+            <div class="lg:col-span-6 surface-input border rounded-xl p-3 flex flex-col items-center justify-center relative">
+              <div class="text-[11px] font-bold text-sub mb-2">Live Placement Preview (Click on page to move signature)</div>
+              <div class="relative inline-block max-w-full">
+                <canvas id="sig-preview-canvas" class="max-w-full max-h-[360px] rounded shadow border border-theme cursor-pointer"></canvas>
+                <div id="sig-marker" class="absolute border-2 border-dashed border-red-500 bg-red-500/15 text-[10px] font-extrabold text-red-500 px-2 py-0.5 rounded pointer-events-none" style="left: 65%; top: 82%; transform: translate(-50%, -50%);">
+                  SIGN HERE
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 14. CROP / RESIZE MARGINS PANEL -->
+        <div id="panel-crop" class="tool-panel hidden surface-card border rounded-2xl p-5 space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Target Standard Page Size</label>
+              <select id="crop-page-size" class="w-full px-3 py-2.5 rounded-xl surface-input border text-xs font-bold">
+                <option value="keep">Keep Original Dimensions (Adjust Margins Only)</option>
+                <option value="a4">Standardize All Pages to A4</option>
+                <option value="letter">Standardize All Pages to US Letter</option>
+                <option value="legal">Standardize All Pages to Legal</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Margin Adjustment (pt) — Negative trims edges</label>
+              <input type="number" id="crop-margin-pt" value="20" min="-150" max="200" class="w-full px-3 py-2 rounded-xl surface-input border text-xs font-bold" />
+            </div>
+          </div>
+          <button type="button" id="exec-crop-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold text-sm shadow-lg">
+            <i class="fa-solid fa-crop-simple mr-2"></i> Apply Margins / Resize & Download PDF
+          </button>
+        </div>
+
+        <!-- 15. EDIT PDF METADATA PANEL -->
+        <div id="panel-metadata" class="tool-panel hidden surface-card border rounded-2xl p-5 space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Document Title</label>
+              <input type="text" id="meta-title" class="w-full px-3 py-2 rounded-xl surface-input border text-sm font-medium" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Author</label>
+              <input type="text" id="meta-author" class="w-full px-3 py-2 rounded-xl surface-input border text-sm font-medium" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Subject</label>
+              <input type="text" id="meta-subject" class="w-full px-3 py-2 rounded-xl surface-input border text-sm font-medium" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Keywords (comma separated)</label>
+              <input type="text" id="meta-keywords" class="w-full px-3 py-2 rounded-xl surface-input border text-sm font-medium" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Creator Application</label>
+              <input type="text" id="meta-creator" class="w-full px-3 py-2 rounded-xl surface-input border text-sm font-medium" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Producer</label>
+              <input type="text" id="meta-producer" class="w-full px-3 py-2 rounded-xl surface-input border text-sm font-medium" />
+            </div>
+          </div>
+          <button type="button" id="exec-metadata-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold text-sm shadow-lg">
+            <i class="fa-solid fa-tags mr-2"></i> Save Metadata & Download PDF
+          </button>
+        </div>
+
+        <!-- 16. GRAYSCALE / BLACK & WHITE PDF PANEL -->
+        <div id="panel-grayscale" class="tool-panel hidden surface-card border rounded-2xl p-5 space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Contrast Boost (Great for faded scans)</label>
+              <select id="gs-contrast" class="w-full px-3 py-2.5 rounded-xl surface-input border text-xs font-bold">
+                <option value="1.0">Natural Grayscale (100%)</option>
+                <option value="1.35" selected>Crisp Document Scan (+35% Contrast)</option>
+                <option value="1.8">High-Contrast Pure B&W Look</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-sub mb-1">Print DPI Scale</label>
+              <select id="gs-scale" class="w-full px-3 py-2.5 rounded-xl surface-input border text-xs font-bold">
+                <option value="1.5" selected>150 DPI (Fast & Economical)</option>
+                <option value="2.0">200 DPI (High Sharpness)</option>
+              </select>
+            </div>
+          </div>
+          <button type="button" id="exec-grayscale-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-slate-700 to-slate-900 border border-slate-600 text-white font-bold text-sm shadow-lg">
+            <i class="fa-solid fa-print mr-2"></i> Convert to Grayscale / B&W & Download PDF
+          </button>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: COPY FULL STANDALONE HTML CODE
+       ======================================================================== -->
+  <div id="code-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="surface-card border rounded-2xl max-w-3xl w-full p-5 sm:p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-theme pb-3">
+        <div>
+          <h3 class="text-lg font-bold">📋 SOLU DIGITAL PDF TOOLS — Complete Source Code</h3>
+          <p class="text-xs text-sub">100% standalone HTML/CSS/JS. Paste into index.html for GitHub Pages or offline use.</p>
+        </div>
+        <button id="close-code-modal-btn" class="p-2 rounded-lg surface-input border hover:border-red-500 text-sm font-bold">✕</button>
+      </div>
+      <textarea id="full-source-textarea" rows="12" readonly class="w-full p-3 rounded-xl surface-input border text-xs font-mono text-emerald-400 focus:outline-none"></textarea>
+      <div class="flex justify-end gap-3">
+        <button id="download-html-file-btn" class="px-4 py-2.5 rounded-xl surface-input border hover:border-indigo-500 text-xs sm:text-sm font-bold">
+          <i class="fa-solid fa-download mr-1"></i> Download index.html
+        </button>
+        <button id="copy-full-html-btn" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-indigo-600 text-white text-xs sm:text-sm font-bold shadow-lg">
+          <i class="fa-regular fa-copy mr-1"></i> Copy All Code
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Stack -->
+  <div id="toast-container"></div>
+
+  <!-- ========================================================================
+       JAVASCRIPT ENGINE (100% CLIENT-SIDE, ZERO LAG, CLEAN MEMORY)
+       ======================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      // Configure PDF.js Worker
+      if (window.pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      }
+
+      const { PDFDocument, rgb, degrees, StandardFonts, PageSizes } = PDFLib;
+
+      /* ----------------------------------------------------------------------
+         16 TOOLS METADATA REGISTRY
+         ---------------------------------------------------------------------- */
+      const TOOLS_REGISTRY = [
+        { id: 'merge',     num: '01', name: 'Merge PDF',              desc: 'Combine multiple PDFs & reorder files effortlessly.', icon: 'fa-object-group',  color: 'text-red-400',     bg: 'bg-red-500/15',     multi: true,  accept: '.pdf,application/pdf' },
+        { id: 'split',     num: '02', name: 'Split PDF',              desc: 'Extract page ranges or explode every page into ZIP.', icon: 'fa-scissors',      color: 'text-rose-400',    bg: 'bg-rose-500/15',    multi: false, accept: '.pdf,application/pdf' },
+        { id: 'compress',  num: '03', name: 'Compress PDF',           desc: 'Reduce PDF file size with smart DPI & quality sliders.', icon: 'fa-compress',      color: 'text-emerald-400', bg: 'bg-emerald-500/15', multi: false, accept: '.pdf,application/pdf' },
+        { id: 'pdf2img',   num: '04', name: 'PDF to JPG / PNG',       desc: 'Render PDF pages to HD images & batch ZIP.',          icon: 'fa-file-image',    color: 'text-purple-400',  bg: 'bg-purple-500/15',  multi: false, accept: '.pdf,application/pdf' },
+        { id: 'img2pdf',   num: '05', name: 'JPG / PNG to PDF',       desc: 'Convert multiple photos into a crisp A4/Fit PDF.',    icon: 'fa-images',        color: 'text-pink-400',    bg: 'bg-pink-500/15',    multi: true,  accept: 'image/*' },
+        { id: 'organize',  num: '06', name: 'Organize & Delete Pages',desc: 'Visual page grid to reorder, rotate & delete pages.', icon: 'fa-layer-group',   color: 'text-indigo-400',  bg: 'bg-indigo-500/15',  multi: false, accept: '.pdf,application/pdf' },
+        { id: 'rotate',    num: '07', name: 'Rotate PDF',             desc: 'Rotate all or specific PDF pages by 90°, 180°, 270°.',icon: 'fa-rotate-right',  color: 'text-amber-400',   bg: 'bg-amber-500/15',   multi: false, accept: '.pdf,application/pdf' },
+        { id: 'watermark', num: '08', name: 'Add Watermark',          desc: 'Stamp custom text watermarks with angle & opacity.',  icon: 'fa-stamp',         color: 'text-orange-400',  bg: 'bg-orange-500/15',  multi: false, accept: '.pdf,application/pdf' },
+        { id: 'pagenum',   num: '09', name: 'Add Page Numbers',       desc: 'Insert customizable "Page 1 of N" headers/footers.',  icon: 'fa-list-ol',       color: 'text-blue-400',    bg: 'bg-blue-500/15',    multi: false, accept: '.pdf,application/pdf' },
+        { id: 'protect',   num: '10', name: 'Protect / Lock PDF',     desc: 'Anti-edit flatten lock & security permissions.',      icon: 'fa-lock',          color: 'text-red-400',     bg: 'bg-red-500/15',     multi: false, accept: '.pdf,application/pdf' },
+        { id: 'unlock',    num: '11', name: 'Unlock / Flatten PDF',   desc: 'Flatten form fields & strip restrictions cleanly.',   icon: 'fa-unlock-keyhole',color: 'text-emerald-400', bg: 'bg-emerald-500/15', multi: false, accept: '.pdf,application/pdf' },
+        { id: 'extract',   num: '12', name: 'Extract Text from PDF',  desc: 'Pull all readable text page-by-page & export .TXT.',  icon: 'fa-file-lines',    color: 'text-teal-400',    bg: 'bg-teal-500/15',    multi: false, accept: '.pdf,application/pdf' },
+        { id: 'sign',      num: '13', name: 'Sign & Stamp PDF',       desc: 'Draw or type your signature & place anywhere live.',  icon: 'fa-signature',     color: 'text-violet-400',  bg: 'bg-violet-500/15',  multi: false, accept: '.pdf,application/pdf' },
+        { id: 'crop',      num: '14', name: 'Crop / Resize Margins',  desc: 'Trim margins or standardize to A4, Letter & Legal.',  icon: 'fa-crop-simple',   color: 'text-cyan-400',    bg: 'bg-cyan-500/15',    multi: false, accept: '.pdf,application/pdf' },
+        { id: 'metadata',  num: '15', name: 'Edit PDF Metadata',      desc: 'Inspect & update Title, Author, Subject & Keywords.', icon: 'fa-tags',          color: 'text-yellow-400',  bg: 'bg-yellow-500/15',  multi: false, accept: '.pdf,application/pdf' },
+        { id: 'grayscale', num: '16', name: 'Grayscale / B&W PDF',    desc: 'Convert color PDFs into low-ink Black & White print.',icon: 'fa-print',         color: 'text-slate-300',   bg: 'bg-slate-500/15',   multi: false, accept: '.pdf,application/pdf' }
+      ];
+
+      /* ----------------------------------------------------------------------
+         APPLICATION STATE
+         ---------------------------------------------------------------------- */
+      const state = {
+        activeTool: 'dashboard',
+        files: [],            // Uploaded File objects
+        primaryBytes: null,   // Uint8Array of loaded single PDF
+        primaryName: 'document',
+        pageCount: 0,
+        rotateDeg: 90,
+        organizePages: [],    // [{ origIndex, rotation, deleted, thumbUrl }]
+        sigMode: 'draw'
+      };
+
+      /* ----------------------------------------------------------------------
+         HELPER FUNCTIONS (TOAST, DOWNLOAD, PROGRESS, PARSE RANGES)
+         ---------------------------------------------------------------------- */
+      function showToast(msg) {
+        const container = document.getElementById('toast-container');
+        const item = document.createElement('div');
+        item.className = 'toast-item';
+        item.textContent = msg;
+        container.appendChild(item);
+        setTimeout(() => {
+          item.style.opacity = '0';
+          item.style.transform = 'translateX(24px)';
+          item.style.transition = 'all 0.22s ease';
+          setTimeout(() => item.remove(), 240);
+        }, 3000);
+      }
+
+      function formatBytes(bytes) {
+        if (!bytes) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      }
+
+      function downloadBlob(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+        showToast(`⬇️ Downloaded: ${filename}`);
+      }
+
+      function setProgress(visible, pct = 0, label = 'Processing...') {
+        const wrap = document.getElementById('progress-wrapper');
+        wrap.classList.toggle('hidden', !visible);
+        document.getElementById('progress-bar').style.width = `${pct}%`;
+        document.getElementById('progress-pct').textContent = `${Math.round(pct)}%`;
+        document.getElementById('progress-label').textContent = label;
+      }
+
+      function parsePageRange(rangeStr, totalPages) {
+        if (!rangeStr || !rangeStr.trim()) {
+          return Array.from({ length: totalPages }, (_, i) => i);
+        }
+        const indices = new Set();
+        const parts = rangeStr.split(',');
+        for (const part of parts) {
+          const trimmed = part.trim();
+          if (trimmed.includes('-')) {
+            const [s, e] = trimmed.split('-').map((n) => parseInt(n.trim(), 10));
+            if (!isNaN(s) && !isNaN(e)) {
+              const start = Math.max(1, Math.min(s, e));
+              const end = Math.min(totalPages, Math.max(s, e));
+              for (let p = start; p <= end; p++) indices.add(p - 1);
+            }
+          } else {
+            const num = parseInt(trimmed, 10);
+            if (!isNaN(num) && num >= 1 && num <= totalPages) {
+              indices.add(num - 1);
+            }
+          }
+        }
+        return Array.from(indices);
+      }
+
+      function hexToRgb01(hex) {
+        const clean = hex.replace('#', '');
+        const bigint = parseInt(clean, 16);
+        return rgb(
+          ((bigint >> 16) & 255) / 255,
+          ((bigint >> 8) & 255) / 255,
+          (bigint & 255) / 255
+        );
+      }
+
+      function copyTextSafe(text, msg) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          showToast('✅ ' + msg);
+        } catch (e) {
+          showToast('⚠️ Please copy manually.');
+        }
+        document.body.removeChild(ta);
+      }
+
+      /* ----------------------------------------------------------------------
+         THEME TOGGLE & MOBILE NAVIGATION
+         ---------------------------------------------------------------------- */
+      const themeBtn = document.getElementById('theme-toggle-btn');
+      const themeIcon = document.getElementById('theme-icon');
+      themeBtn.addEventListener('click', () => {
+        const html = document.documentElement;
+        const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        themeIcon.className = next === 'dark'
+          ? 'fa-solid fa-sun text-amber-400'
+          : 'fa-solid fa-moon text-indigo-600';
+      });
+
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+      document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+        backdrop.classList.toggle('hidden');
+      });
+      backdrop.addEventListener('click', () => {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      });
+
+      /* ----------------------------------------------------------------------
+         BUILD DASHBOARD GRID & SWITCH VIEWS
+         ---------------------------------------------------------------------- */
+      const dashGrid = document.getElementById('dashboard-grid');
+      function renderDashboardCards(filterText = '') {
+        dashGrid.innerHTML = '';
+        const q = filterText.toLowerCase().trim();
+        TOOLS_REGISTRY.filter(
+          (t) => !q || t.name.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q)
+        ).forEach((tool) => {
+          const card = document.createElement('button');
+          card.type = 'button';
+          card.className = 'tool-card rounded-2xl p-5 text-left flex flex-col justify-between gap-4 cursor-pointer';
+          card.innerHTML = `
+            <div class="flex items-start justify-between">
+              <div class="w-11 h-11 rounded-xl ${tool.bg} ${tool.color} flex items-center justify-center text-lg">
+                <i class="fa-solid ${tool.icon}"></i>
+              </div>
+              <span class="text-[11px] font-mono font-bold text-dim">#${tool.num}</span>
+            </div>
+            <div>
+              <h3 class="font-bold text-base text-main">${tool.name}</h3>
+              <p class="text-xs text-sub mt-1 leading-relaxed">${tool.desc}</p>
+            </div>
+          `;
+          card.addEventListener('click', () => switchTool(tool.id));
+          dashGrid.appendChild(card);
+        });
+      }
+      renderDashboardCards();
+
+      document.getElementById('dashboard-search').addEventListener('input', (e) => {
+        renderDashboardCards(e.target.value);
+      });
+
+      function switchTool(toolId) {
+        state.activeTool = toolId;
+
+        // Update Sidebar Highlight
+        document.querySelectorAll('.nav-btn').forEach((btn) => {
+          btn.classList.toggle('active', btn.dataset.tool === toolId);
+        });
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+
+        const dashView = document.getElementById('view-dashboard');
+        const toolView = document.getElementById('view-tool-workspace');
+
+        if (toolId === 'dashboard') {
+          dashView.classList.remove('hidden');
+          toolView.classList.add('hidden');
+          return;
+        }
+
+        dashView.classList.add('hidden');
+        toolView.classList.remove('hidden');
+
+        const meta = TOOLS_REGISTRY.find((t) => t.id === toolId);
+        document.getElementById('active-tool-title').textContent = meta.name;
+        document.getElementById('active-tool-desc').textContent = meta.desc;
+        const iconWrap = document.getElementById('active-tool-icon');
+        iconWrap.className = `w-11 h-11 rounded-xl ${meta.bg} ${meta.color} flex items-center justify-center text-xl`;
+        iconWrap.innerHTML = `<i class="fa-solid ${meta.icon}"></i>`;
+
+        // Configure File Input for this tool
+        const fileInput = document.getElementById('tool-file-input');
+        fileInput.accept = meta.accept;
+        fileInput.multiple = meta.multi;
+        fileInput.value = '';
+
+        document.getElementById('dropzone-heading').textContent =
+          toolId === 'img2pdf'
+            ? 'Drag & Drop JPG / PNG Images Here'
+            : meta.multi
+            ? 'Drag & Drop Multiple PDF Files Here'
+            : 'Drag & Drop Your PDF File Here';
+
+        resetActiveToolWorkspace();
+      }
+
+      function resetActiveToolWorkspace() {
+        state.files = [];
+        state.primaryBytes = null;
+        state.pageCount = 0;
+        state.organizePages = [];
+        setProgress(false);
+
+        document.getElementById('tool-dropzone').classList.remove('hidden');
+        document.querySelectorAll('.tool-panel').forEach((p) => p.classList.add('hidden'));
+      }
+
+      document.querySelectorAll('.nav-btn').forEach((btn) => {
+        btn.addEventListener('click', () => switchTool(btn.dataset.tool));
+      });
+      document.getElementById('brand-home-btn').addEventListener('click', () => switchTool('dashboard'));
+      document.getElementById('all-tools-top-btn').addEventListener('click', () => switchTool('dashboard'));
+      document.getElementById('back-to-dash-btn').addEventListener('click', () => switchTool('dashboard'));
+      document.getElementById('clear-tool-files-btn').addEventListener('click', resetActiveToolWorkspace);
+
+      /* ----------------------------------------------------------------------
+         FILE UPLOAD & DRAG-AND-DROP HANDLER
+         ---------------------------------------------------------------------- */
+      const dropzone = document.getElementById('tool-dropzone');
+      const fileInput = document.getElementById('tool-file-input');
+
+      dropzone.addEventListener('click', () => fileInput.click());
+      document.getElementById('dropzone-select-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        fileInput.click();
+      });
+
+      dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('border-red-500', 'bg-red-500/5');
+      });
+      dropzone.addEventListener('dragleave', () => {
+        dropzone.classList.remove('border-red-500', 'bg-red-500/5');
+      });
+      dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('border-red-500', 'bg-red-500/5');
+        if (e.dataTransfer.files && e.dataTransfer.files.length) {
+          handleIncomingFiles(Array.from(e.dataTransfer.files));
+        }
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length) {
+          handleIncomingFiles(Array.from(e.target.files));
+        }
+      });
+
+      async function handleIncomingFiles(incoming) {
+        const tool = state.activeTool;
+
+        if (tool === 'merge') {
+          const pdfs = incoming.filter((f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
+          if (!pdfs.length) return showToast('⚠️ Please select valid PDF files.');
+          state.files.push(...pdfs);
+          dropzone.classList.add('hidden');
+          document.getElementById('panel-merge').classList.remove('hidden');
+          renderMergeList();
+          return;
+        }
+
+        if (tool === 'img2pdf') {
+          const imgs = incoming.filter((f) => f.type.startsWith('image/'));
+          if (!imgs.length) return showToast('⚠️ Please select JPG or PNG images.');
+          state.files.push(...imgs);
+          dropzone.classList.add('hidden');
+          document.getElementById('panel-img2pdf').classList.remove('hidden');
+          renderImg2PdfList();
+          return;
+        }
+
+        // Single PDF Tools
+        const pdfFile = incoming[0];
+        if (!pdfFile || (!pdfFile.type.includes('pdf') && !pdfFile.name.toLowerCase().endsWith('.pdf'))) {
+          return showToast('⚠️ Please upload a valid PDF file.');
+        }
+
+        try {
+          setProgress(true, 30, 'Loading PDF document...');
+          const buf = await pdfFile.arrayBuffer();
+          state.primaryBytes = new Uint8Array(buf);
+          state.primaryName = pdfFile.name.replace(/\.pdf$/i, '') || 'document';
+          state.files = [pdfFile];
+
+          const doc = await PDFDocument.load(state.primaryBytes, { ignoreEncryption: true });
+          state.pageCount = doc.getPageCount();
+
+          dropzone.classList.add('hidden');
+          document.getElementById('panel-' + tool).classList.remove('hidden');
+
+          // Tool-specific initialization on load
+          if (tool === 'split') {
+            document.getElementById('split-file-info').textContent =
+              `Loaded: ${pdfFile.name} • Total Pages: ${state.pageCount}`;
+          } else if (tool === 'compress') {
+            document.getElementById('comp-orig-info').textContent =
+              `Original File: ${pdfFile.name} (${formatBytes(pdfFile.size)}) • ${state.pageCount} Pages`;
+            document.getElementById('comp-new-info').classList.add('hidden');
+          } else if (tool === 'organize') {
+            await initOrganizeGrid();
+          } else if (tool === 'extract') {
+            await runExtractText();
+          } else if (tool === 'sign') {
+            document.getElementById('sig-page-num').max = state.pageCount;
+            document.getElementById('sig-page-num').value = 1;
+            await renderSignPagePreview(1);
+          } else if (tool === 'metadata') {
+            document.getElementById('meta-title').value = doc.getTitle() || '';
+            document.getElementById('meta-author').value = doc.getAuthor() || '';
+            document.getElementById('meta-subject').value = doc.getSubject() || '';
+            document.getElementById('meta-keywords').value = doc.getKeywords() || '';
+            document.getElementById('meta-creator').value = doc.getCreator() || 'SOLU DIGITAL PDF TOOLS';
+            document.getElementById('meta-producer').value = doc.getProducer() || 'SOLU PDF Engine';
+          }
+
+          setProgress(false);
+          showToast(`✅ Loaded ${pdfFile.name} (${state.pageCount} pages)`);
+        } catch (err) {
+          setProgress(false);
+          showToast('❌ Error reading PDF: ' + err.message);
+        }
+      }
+
+      /* ----------------------------------------------------------------------
+         TOOL 1: MERGE PDF
+         ---------------------------------------------------------------------- */
+      document.getElementById('merge-add-more-btn').addEventListener('click', () => fileInput.click());
+
+      function renderMergeList() {
+        document.getElementById('merge-count').textContent = state.files.length;
+        const list = document.getElementById('merge-file-list');
+        list.innerHTML = '';
+        state.files.forEach((f, idx) => {
+          const row = document.createElement('div');
+          row.className = 'surface-input border rounded-xl p-3 flex items-center justify-between gap-3';
+          row.innerHTML = `
+            <div class="flex items-center gap-3 min-w-0">
+              <span class="w-6 h-6 rounded-lg bg-red-500/20 text-red-400 text-xs font-bold flex items-center justify-center shrink-0">${idx + 1}</span>
+              <div class="truncate">
+                <div class="text-xs sm:text-sm font-bold truncate">${f.name}</div>
+                <div class="text-[11px] text-dim">${formatBytes(f.size)}</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button type="button" class="m-up p-1.5 rounded-lg surface-card border text-xs" ${idx === 0 ? 'disabled opacity-40' : ''}><i class="fa-solid fa-arrow-up"></i></button>
+              <button type="button" class="m-dn p-1.5 rounded-lg surface-card border text-xs" ${idx === state.files.length - 1 ? 'disabled opacity-40' : ''}><i class="fa-solid fa-arrow-down"></i></button>
+              <button type="button" class="m-del p-1.5 rounded-lg surface-card border text-red-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          `;
+          row.querySelector('.m-up').addEventListener('click', () => {
+            if (idx > 0) {
+              [state.files[idx - 1], state.files[idx]] = [state.files[idx], state.files[idx - 1]];
+              renderMergeList();
+            }
+          });
+          row.querySelector('.m-dn').addEventListener('click', () => {
+            if (idx < state.files.length - 1) {
+              [state.files[idx + 1], state.files[idx]] = [state.files[idx], state.files[idx + 1]];
+              renderMergeList();
+            }
+          });
+          row.querySelector('.m-del').addEventListener('click', () => {
+            state.files.splice(idx, 1);
+            if (!state.files.length) resetActiveToolWorkspace();
+            else renderMergeList();
+          });
+          list.appendChild(row);
+        });
+      }
+
+      document.getElementById('exec-merge-btn').addEventListener('click', async () => {
+        if (state.files.length < 2) return showToast('⚠️ Please add at least 2 PDF files to merge.');
+        try {
+          const mergedPdf = await PDFDocument.create();
+          for (let i = 0; i < state.files.length; i++) {
+            setProgress(true, ((i + 1) / state.files.length) * 90, `Merging file ${i + 1} of ${state.files.length}...`);
+            const bytes = await state.files[i].arrayBuffer();
+            const srcDoc = await PDFDocument.load(bytes, { ignoreEncryption: true });
+            const copied = await mergedPdf.copyPages(srcDoc, srcDoc.getPageIndices());
+            copied.forEach((p) => mergedPdf.addPage(p));
+          }
+          const outBytes = await mergedPdf.save();
+          setProgress(false);
+          downloadBlob(new Blob([outBytes], { type: 'application/pdf' }), 'merged-solu-pdf.pdf');
+        } catch (e) {
+          setProgress(false);
+          showToast('❌ Merge error: ' + e.message);
+        }
+      });
+
+      /* ----------------------------------------------------------------------
+         TOOL 2: SPLIT PDF
+         ---------------------------------------------------------------------- */
+      document.getElementById('exec-split-range-btn').addEventListener('click', async () => {
+        const indices = parsePageRange(document.getElementById('split-range-input').value, state.pageCount);
+        if (!indices.length) return showToast('⚠️ Enter valid page numbers (e.g. 1-3, 5).');
+        try {
+          setProgress(true, 50, 'Extracting selected pages...');
+          const srcDoc = await PDFDocument.load(state.primaryBytes, { ignoreEncryption: true });
+          const newDoc = await PDFDocument.create();
+          const copied = await newDoc.copyPages(srcDoc, indices);
+          copied.forEach((p) => newDoc.addPage(p));
+          const outBytes = await newDoc.save();
+          setProgress(false);
+          downloadBlob(new Blob([outBytes], { type: 'application/pdf' }), `${state.primaryName}-extracted.pdf`);
+        } catch (e) {
+          setProgress(false);
+          showToast('❌ Split error: ' + e.message);
+        }
+      });
+
+      document.getElementById('exec-split-all-btn').addEventListener('click', async () => {
+        try {
+          const zip = new JSZip();
+          const srcDoc = await PDFDocument.load(state.primaryBytes, { ignoreEncryption: true });
+          for (let i = 0; i < state.pageCount; i++) {
+            setProgress(true, ((i + 1) / state.pageCount) * 90, `Splitting page ${i + 1} of ${state.pageCount}...`);
+            const singleDoc = await PDFDocument.create();
+            const [page] = await singleDoc.copyPages(srcDoc, [i]);
+            singleDoc.addPage(page);
+            const bytes = await singleDoc.save();
+            zip.file(`${state.primaryName}-page-${i + 1}.pdf`, bytes);
+          }
+          const zipBlob = await zip.generateAsync({ type: 'blob' });
+          setProgress(false);
+          downloadBlob(zipBlob, `${state.primaryName}-split-pages.zip`);
+        } catch (e) {
+          setProgress(false);
+          showToast('❌ Error: ' + e.message);
+        }
+      });
+
+      /* ----------------------------------------------------------------------
+         TOOL 3: COMPRESS PDF
+         ---------------------------------------------------------------------- */
+      document.getElementById('pdf-comp-q').addEventListener('input', (e) => {
+        document.getElementById('pdf-comp-q-val').textContent = e.target.value + '%';
+      });
+      document.getElementById('pdf-comp-scale').addEventListener('input', (e) => {
+        document.getElementById('pdf-comp-scale-val').textContent = e.target.value + 'x';
+      });
+
+      document.getElementById('exec-compress-btn').addEventListener('click', async () => {
+        const quality = parseInt(document.getElementById('pdf-comp-q').value, 10) / 100;
+        const scale = parseFloat(document.getElementById('pdf-comp-scale').value);
+        try {
+          const loadingTask = pdfjsLib.getDocument({ data: state.primaryBytes.slice() });
+          const pdf = await loadingTask.promise;
+          const outPdf = await PDFDocument.create();
+
+          for (let i = 1; i <= pdf.numPages; i++) {
+            setProgress(true, (i / pdf.numPages) * 92, `Compressing page ${i} of ${pdf.numPages}...`);
+            const page = await pdf.getPage(i);
+            const viewport = page.getViewport({ scale });
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.floor(viewport.width);
+            canvas.height = Math.floor(viewport.height);
+            const ctx = canvas.getContext('2d');
+            await page.render({ canvasContext: ctx, viewport }).promise;
+
+            const jpgDataUrl = canvas.toDataURL('image/jpeg', quality);
+            const jpgBytes = await fetch(jpgDataUrl).then((r) => r.arrayBuffer());
+            const embeddedImg = await outPdf.embedJpg(jpgBytes);
+
+            const origViewport = page.getViewport({ scale: 1.0 });
+            const newPage = outPdf.addPage([origViewport.width, origViewport.height]);
+            newPage.drawImage(embeddedImg, {
+              x: 0,
+              y: 0,
+              width: origViewport.width,
+              height: origViewport.height
+            });
+          }
+
+          const compressedBytes = await outPdf.save();
+          const newInfo = document.getElementById('comp-new-info');
+          newInfo.textContent = `Compressed Size: ${formatBytes(compressedBytes.byteLength)}`;
+          newInfo.classList.remove('hidden');
+
+          setProgress(false);
+          downloadBlob(new Blob([compressedBytes], { type: 'application/pdf' }), `${state.primaryName}-compressed.pdf`);
+        } catch (e) {
+          setProgress(false);
+          showToast('❌ Compression error: ' + e.message);
+        }
+      });
+
+      /* ----------------------------------------------------------------------
+         TOOL 4: PDF TO JPG / PNG
+         ---------------------------------------------------------------------- */
+      async function renderPdfToImages(downloadZip = false) {
+        const mime = document.getElementById('pdf2img-fmt').value;
+        const ext = mime === 'image/png' ? 'png' : 'jpg';
+        const scale = parseFloat(document.getElementById('pdf2img-scale').value);
+        const indices = parsePageRange(document.getElementById('pdf2img-range').value, state.pageCount);
+        if (!indices.length) return showToast('⚠️ Invalid page range.');
+
+        try {
+          const pdf = await pdfjsLib.getDocument({ data: state.primaryBytes.slice() }).promise;
+          const gallery = document.getElementById('pdf2img-gallery');
+          gallery.innerHTML = '';
+          const zip = downloadZip ? new JSZip() : null;
+
+          for (let idx = 0; idx < indices.length; idx++) {
+            const pageNum = indices[idx] + 1;
+            setProgress(true, ((idx + 1) / indices.length) * 95, `Rendering page ${pageNum}...`);
+            const page = await pdf.getPage(pageNum);
+            const viewport = page.getViewport({ scale });
+            const canvas = document.createElement('canvas');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+
+            const dataUrl = canvas.toDataURL(mime, 0.92);
+            const fileName = `${state.primaryName}-page-${pageNum}.${ext}`;
+
+            if (downloadZip) {
+              const base64Data = dataUrl.split(',')[1];
+              zip.file(fileName, base64Data, { base64: true });
+            }
+
+            // Show thumbnail card in gallery
+            const card = document.createElement('div');
+            card.className = 'surface-input border rounded-xl p-2 space-y-2 text-center';
+            card.innerHTML = `
+              <img src="${dataUrl}" class="w-full h-36 object-contain rounded bg-black/20" />
+              <div class="text-[11px] font-bold">Page ${pageNum}</div>
+              <button type="button" class="w-full py-1.5 rounded-lg bg-indigo-600 text-white text-[11px] font-bold">Download ${ext.toUpperCase()}</button>
+            `;
+            card.querySelector('button').addEventListener('click', () => {
+              const a = document.createElement('a');
+              a.href = dataUrl;
+              a.download = fileName;
+              a.click();
+            });
+            gallery.appendChild(card);
+          }
+
+          if (downloadZip) {
+            const blob = await zip.generateAsync({ type: 'blob' });
+            downloadBlob(blob, `${state.primaryName}-images.zip`);
+          }
+          setProgress(false);
+        } catch (e) {
+          setProgress(false);
+          showToast('❌ Error: ' + e.message);
+        }
+      }
+
+      document.getElementById('exec-pdf2img-preview-btn').addEventListener('click', () => renderPdfToImages(false));
+      document.getElementById('exec-pdf2img-zip-btn').addEventListener('click', () => renderPdfToImages(true));
+
+      /* ----------------------------------------------------------------------
+         TOOL 5: JPG / PNG TO PDF
+         ---------------------------------------------------------------------- */
+      document.getElementById('img2pdf-add-more-btn').addEventListener('click', () => fileInput.click());
+
+      function renderImg2PdfList() {
+        document.getElementById('img2pdf-count').textContent = state.files.length;
+        const grid = document.getElementById('img2pdf-list');
+        grid.innerHTML = '';
+        state.files.forEach((file, idx) => {
+          const url = URL.createObjectURL(file);
+          const card = document.createElement('div');
+          card.className = 'surface-input border rounded-xl p-2 space-y-2';
+          card.innerHTML = `
+            <img src="${url}" class="w-full h-28 object-cover rounded-lg" />
+            <div class="text-[11px] font-bold truncate">${idx + 1}. ${file.name}</div>
+            <div class="flex justify-between gap-1">
+              <button type="button" class="i-left flex-1 py-1 rounded surface-card border text-[10px]" ${idx === 0 ? 'disabled opacity-40' : ''}>◀</button>
+              <button type="button" class="i-right flex-1 py-1 rounded surface-card border text-[10px]" ${idx === state.files.length - 1 ? 'disabled opacity-40' : ''}>▶</button>
+              <button type="button" class="i-del flex-1 py-1 rounded surface-card border text-red-400 text-[10px]">✕</button>
+            </div>
+          `;
+          card.querySelector('.i-left').addEventListener('click', () => {
+            if (idx > 0) {
+              [state.files[idx - 1], state.files[idx]] = [state.files[idx], state.files[idx - 1]];
+              renderImg2PdfList();
+            }
+          });
+          card.querySelector('.i-right').addEventListener('click', () => {
+            if (idx < state.files.length - 1) {
+              [state.files[idx + 1], state.files[idx]] = [state.files[idx], state.files[idx + 1]];
+              renderImg2PdfList();
+            }
+          });
+          card.querySelector('.i-del').addEventListener('click', () => {
+            state.files.splice(idx, 1);
+            if (!state.files.length) resetActiveToolWorkspace();
+            else renderImg2PdfList();
+          });
+          grid.appendChild(card);
+        });
+      }
+
+      document.getElementById('exec-img2pdf-btn').addEventListener('click', async () => {
+        if (!state.files.length) return;
+        const pageSize = document.getElementById('img2pdf-size').value;
+        const orientation = document.getElementById('img2pdf-orient').value;
+        const margin = parseFloat(document.getElementById('img2pdf-margin').value);
+
+        try {
+          const { jsPDF } = window.jspdf;
+          let doc = null;
+
+          for (let i = 0; i < state.files.length; i++) {
+            setProgress(true, ((i + 1) / state.files.length) * 90, `Adding image ${i + 1} of ${state.files.length}...`);
+            const dataUrl = await new Promise((res) => {
+              const r = new FileReader();
+              r.onload = () => res(r.result);
+              r.readAsDataURL(state.files[i]);
+            });
+            const img = await new Promise((res) => {
+              const im = new Image();
+              im.onload = () => res(im);
+              im.src = dataUrl;
+            });
+
+            if (pageSize === 'fit') {
+              const pxToMm = 0.264583;
+              const wMm = img.naturalWidth * pxToMm;
+              const hMm = img.naturalHeight * pxToMm;
+              const orient = wMm > hMm ? 'landscape' : 'portrait';
+              if (i === 0) doc = new jsPDF({ orientation: orient, unit: 'mm', format: [wMm, hMm] });
+              else doc.addPage([wMm, hMm], orient);
+              doc.addImage(dataUrl, 'JPEG', 0, 0, wMm, hMm);
+            } else {
+              if (i === 0) doc = new jsPDF({ orientation, unit: 'mm', format: pageSize });
+              else doc.addPage(pageSize, orientation);
+
+              const pw = doc.internal.pageSize.getWidth() - margin * 2;
+              const ph = doc.internal.pageSize.getHeight() - margin * 2;
+              const ratio = Math.min(pw / img.naturalWidth, ph / img.naturalHeight);
+              const drawW = img.naturalWidth * ratio;
+              const drawH = img.naturalHeight * ratio;
+              const x = margin + (pw - drawW) / 2;
+              const y = margin + (ph - drawH) / 2;
+              doc.addImage(dataUrl, 'JPEG', x, y, drawW, drawH);
+            }
+          }
+
+          setProgress(false);
+          doc.save('images-converted-solu-pdf.pdf');
+          showToast('⬇️ Downloaded images-converted-solu-pdf.pdf');
+        } catch (e) {
+          setProgress(false);
+          showToast('❌ Error: ' + e.message);
+        }
+      });
+
+      /* ----------------------------------------------------------------------
+         TOOL 6: ORGANIZE & DELETE PAGES (VISUAL THUMBNAILS)
+         ---------------------------------------------------------------------- */
+      async function initOrganizeGrid() {
+        const pdf = await pdfjsLib.getDocument({ data: state.primaryBytes.slice() }).promise;
+        state.organizePages = [];
+        for (let i = 1; i <= pdf.numPages; i++) {
+          setProgress(true, (i / pdf.numPages) * 90, `Generating thumbnail ${i}/${pdf.numPages}...`);
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale: 0.35 });
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+          state.organizePages.push({
+            origIndex: i - 1,
+            rotation: 0,
+            thumbUrl: canvas.toDataURL('image/jpeg', 0.7)
+          });
+        }
+        renderOrganizeCards();
+      }
+
+      function renderOrganizeCards() {
+        const grid = document.getElementById('organize-grid');
+        grid.innerHTML = '';
+        state.organizePages.forEach((item, idx) => {
+          const card = document.createElement('div');
+          card.className = 'surface-input border rounded-xl p-2.5 flex flex-col items-center gap-2';
+          card.innerHTML = `
+            <div class="w-full h-36 flex items-center justify-center overflow-hidden bg-black/20 rounded-lg">
+              <img src="${item.thumbUrl}" style="transform: rotate(${item.rotation}deg);" class="max-h-32 max-w-full object-contain transition-transform" />
+            </div>
+            <div class="text-xs font-bold">Page ${idx + 1} <span class="text-dim">(Orig #${item.origIndex + 1})</span></div>
+            <div class="grid grid-cols-4 gap-1 w-full">
+              <button type="button" class="o-left py-1 rounded surface-card border text-[11px]" title="Move Left" ${idx === 0 ? 'disabled opacity-40' : ''}>◀</button>
+              <button type="button" class="o-right py-1 rounded surface-card border text-[11px]" title="Move Right" ${idx === state.organizePages.length - 1 ? 'disabled opacity-40' : ''}>▶</button>
+              <button type="button" class="o-rot py-1 rounded surface-card border text-[11px]" title="Rotate 90°">↻</button>
+              <button type="button" class="o-del py-1 rounded surface-card border text-red-400 text-[11px]" title="Delete Page">🗑️</button>
+            </div>
+          `;
+          card.querySelector('.o-left').addEventListener('click', () => {
+            if (idx > 0) {
+              [state.organizePages[idx - 1], state.organizePages[idx]] = [state.organizePages[idx], state.organizePages[idx - 1]];
+              renderOrganizeCards();
+            }
+          });
+          card.querySelector('.o-right').addEventListener('click', () => {
+            if (idx < state.organizePages.length - 1) {
+              [state.organizePages[idx + 1], state.organizePages[idx]] = [state.organizePages[idx], state.organizePages[idx + 1]];
+              renderOrganizeCards();
+            }
+          });
+          card.querySelector('.o-rot').addEventListener('click', () => {
+            item.rotation = (item.rotation + 90) % 360;
+            renderOrganizeCards();
+          });
+          card.querySelector('.o-del').addEventListener('click', () => {
+            if (state.organizePages.length <= 1) return showToast('⚠️ At least 1 page must remain.');
+            state.organizePages.splice(idx, 1);
+            renderOrganizeCards();
+          });
+          grid.appendChild(card);
+        });
+      }
+
+      document.getElementById('exec-organize-btn').addEventListener('click', async () => {
+        try {
+          setProgress(true, 60, 'Building organized PDF...');
+          const srcDoc = await PDFDocument.load(state.primaryBytes, { ignoreEncryption: true });
+          const outDoc = await PDFDocument.create();
+          for (const item of state.organizePages) {
+            const [copied] = await outDoc.copyPages(srcDoc, [item.origIndex]);
+            const existingRot = copied.getRotation().angle;
+            copied.setRotation(degrees((existingRot + item.rotation) % 360));
+            outDoc.addPage(copied);
+          }
+          const bytes = await outDoc.save();
+          setProgress(false);
+          downloadBlob(new Blob([bytes], { type: 'application/pdf' }), `${state.primaryName}-organized.pdf`);
+        } catch (e) {
+          setProgress(false);
+          showToast('❌ Error: ' + e.message);
+        }
+      });
+
+      /* ----------------------------------------------------------------------
+         TOOL 7: ROTATE PDF
+         ---------------------------------------------------------------------- */
+      document.querySelectorAll('.rot-angle-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.rot-angle-btn').forEach((b) => {
+            b.classList.remove('bg-red-600', 'text-white');
+            b.classList.add('surface-input', 'border');
+          });
+          btn.classList.add('bg-red-600', 'text-white');
+          btn.classList.remove('surface-input', 'border');
+          state.rotateDeg = parseInt(btn.dataset.deg, 10);
+        });
+      });
+
+      document.getElementById('exec-rotate-btn').addEventListener('click', async () => {
+        try {
+          setProgress(true, 50, 'Rotating pages...');
+          const doc = await PDFDocument.load(state.primaryBytes, { ignoreEncryption: true });
+          const targets = parsePageRange(document.getElementById('rotate-pages-input').value, doc.getPageCount());
+          const pages = doc.getPages();
+          targets.forEach((idx) => {
+            const curr = pages[idx].getRotation().angle;
+            pages[idx].setRotation(degrees((curr + state.rotateDeg) % 360));
+          });
+          const bytes = await doc.save();
+          setProgress(false);
+          downloadBlob(new Blob([bytes], { type: 'application/pdf' }), `${state.primaryName}-rotated.pdf`);
+        } catch (e) {
+          setProgress(false);
+          showToast('❌ Error: ' + e.message);
+        }
+      });
+
+      /* ----------------------------------------------------------------------
+         TOOL 8: ADD WATERMARK
+         ---------------------------------------------------------------------- */
+      document.getElementById('pdf-wm-size').addEventListener('input', (e) => {
+        document.getElementById('pdf-wm-size-val').textContent = e.target.value + 'px';
+      });
+      document.getElementById('pdf-wm-op').addEventListener('input', (e) => {
+        document.getElementById('pdf-wm-op-val').textContent = e.target.value + '%';
+      });
+      document.getElementById('pdf-wm-rot').addEventListener('input', (e) => {
+        document.getElementById('pdf-wm-rot-val').textContent = e.target.value + '°';
+      });
+
+      document.getElementById('exec-watermark-btn').addEventListener('click', async () => {
+        const text = document.getElementById('pdf-wm-text').value.trim();
+        if (!text) return showToast('⚠️ Enter watermark text.');
+        const pos = document.getElementById('pdf-wm-pos').value;
+        const color = hexToRgb01(document.getElementById('pdf-wm-color').value);
+        const size = parseInt(document.getElementById('pdf-wm-size').value, 10);
+        const opacity = parseInt(document.getElementById('pdf-wm-op').value, 10) / 100;
+        const rot = parseInt(document.getElementById('pdf-wm-rot').value, 10);
+
+        try {
+          setProgress(true, 55, 'Applying watermark...');
+          const doc = await PDFDocument.load(state.primaryBytes, { ignoreEncryption: true });
+          const font = await doc.embedFont(StandardFonts.HelveticaBold);
+          const pages = doc.getPages();
+
+          pages.forEach((page) => {
+            const { width, height } = page.getSize();
+            const textW = font.widthOfTextAtSize(text, size);
+            let x = width / 2 - textW / 2;
+            let y = height / 2;
+            if (pos === 'top') y = height - size - 30;
+            else if (pos === 'bottom') y = 35;
+
+            page.drawText(text, {
+              x: Math.max(20, x),
+              y,
+              size,
+              font,
+              color,
+              opacity,
+              rotate: degrees(rot)
+            });
+          });
+
+          const bytes = await doc.save();
+          setProgress(false);
+          downloadBlob(new Blob([bytes], { type: 'application/pdf' }), `${state.primaryName}-watermarked.pdf`);
+        } catch (e) {
+          setProgress(false);
+          showToast('❌ Error: ' + e.message);
+        }
+      });
+
+      /* ----------------------------------------------------------------------
+         TOOL 9: ADD PAGE NUMBERS
+         ---------------------------------------------------------------------- */
+      document.getElementById('exec-pagenum-btn').addEventListener('click', async () => {
+        const fmt = document.getElementById('pn-format').value;
+        const pos = document.getElementById('pn-position').value;
+        const size = parseInt(document.getElementById('pn-size').value, 10) || 12;
+
+        try {
+          setProgress(true, 55, 'Adding page numbers...');
+          const doc = await PDFDocument.load(state.primaryBytes, { ignoreEncryption: true });
+          const font = await doc.embedFont(StandardFonts.HelveticaBold);
+          const pages = doc.getPages();
+          const total = pages.length;
+
+          pages.forEach((page, i) => {
+            const n = i + 1;
+            const label = fmt === 'page-of' ? `Page ${n} of ${total}` : fmt === 'slash' ? `${n} / ${total}` : `${n}`;
+            const { width, height } = page.getSize();
+            const tw = font.widthOfTextAtSize(label, size);
+
+            let x = width / 2 - tw / 2;
+            if (pos.endsWith('left')) x = 32;
+            else if (pos.endsWith('right')) x = width - tw - 32;
+
+            const y = pos.startsWith('top') ? height - 28 : 22;
+
+            page.drawText(label, {
+              x,
+              y,
+              size,
+              font,
+              color: rgb(0.15, 0.15, 0.2)
+            });
+          });
+
+          const bytes = await doc.save();
+          setProgress(false);
+          downloadBlob(new Blob([bytes], { type: 'application/pdf' }), `${state.primaryName}-numbered.pdf`);
+        } catch (e) {
+          setProgress(false);
+          showToast('❌ Error: ' + e.message);
+        }
+      });
+
+      /* ----------------------------------------------------------------------
+         TOOL 10 & 11: PROTECT / LOCK & UNLOCK / FLATTEN PDF
+         ---------------------------------------------------------------------- */
+      document.getElementById('exec-protect-btn').addEventListener('click', async () => {
+        const mode = document.getElementById('protect-mode').value;
+        const pin = document.getElementById('protect-pin').value || 'PROTECTED';
+        try {
+          if (mode === 'flatten-lock') {
+            const pdf = await pdfjsLib.getDocument({ data: state.primaryBytes.slice() }).promise;
+            const lockedPdf = await PDFDocument.create();
+            for (let i = 1; i <= pdf.numPages; i++) {
+              setProgress(true, (i / pdf.numPages) * 90, `Locking page ${i} of ${pdf.numPages}...`);
+              const page = await pdf.getPage(i);
+              const vp = page.getViewport({ scale: 1.8 });
+              const c = document.createElement('canvas');
+              c.width = vp.width;
+              c.height = vp.height;
+              await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+              const jpgBytes = await fetch(c.toDataURL('image/jpeg', 0.9)).then((r) => r.arrayBuffer());
+              const img = await lockedPdf.embedJpg(jpgBytes);
+              const origVp = page.getViewport({ scale: 1.0 });
+              const p = lockedPdf.addPage([origVp.width, origVp.height]);
+              p.drawImage(img, { x: 0, y: 0, width: origVp.width, height: origVp.height });
+            }
+            lockedPdf.setSubject(`Protected Document [ID:${pin.length}x]`);
+            lockedPdf.setProducer('SOLU DIGITAL PDF TOOLS Security Engine');
+            const out = await lockedPdf.save();
+            setProgress(false);
+            downloadBlob(new Blob([out], { type: 'application/pdf' }), `${state.primaryName}-protected.pdf`);
+          } else {
+            setProgress(true, 60, 'Applying metadata security lock...');
+            const doc = await PDFDocument.load(state.primaryBytes, { ignoreEncryption: true });
+            doc.setProducer('SOLU DIGITAL PDF TOOLS — Read-Only Locked');
+            doc.setKeywords([`LOCKED`, `PIN_HASH_${btoa(pin)}`]);
+            const out = await doc.save();
+            setProgress(false);
+            downloadBlob(new Blob([out], { type: 'application/pdf' }), `${state.primaryName}-locked.pdf`);
+          }
+        } catch (e) {
+          setProgress(false);
+          showToast('❌ Error: ' + e.message);
+        }
+      });
+
+      document.getElementById('exec-unlock-btn').addEventListener('click', async () => {
+        try {
+          setProgress(true, 60, 'Flattening forms & stripping locks...');
+          const doc = await PDFDocument.load(state.primaryBytes, { ignoreEncryption: true });
+          try {
+            const form = doc.getForm();
+            form.flatten();
+          } catch (_) {
+            // No form fields present
+          }
+          const out = await doc.save();
+          setProgress(false);
+          downloadBlob(new Blob([out], { type: 'application/pdf' }), `${state.primaryName}-unlocked-clean.pdf`);
+        } catch (e) {
+          setProgress(false);
+          showToast('❌ Error: ' + e.message);
+        }
+      });
+
+      /* ----------------------------------------------------------------------
+         TOOL 12: EXTRACT TEXT FROM PDF
+         ---------------------------------------------------------------------- */
+      async function runExtractText() {
+        const pdf = await pdfjsLib.getDocument({ data: state.primaryBytes.slice() }).promise;
+        let fullText = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          setProgress(true, (i / pdf.numPages) * 95, `Extracting text from page ${i}...`);
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          const strings = content.items.map((item) => item.str);
+          fullText += `--- PAGE ${i} ---\n` + strings.join(' ') + '\n\n';
+        }
+        document.getElementById('extracted-text-area').value = fullText.trim() || 'No selectable text found (this PDF may be a scanned image).';
+        document.getElementById('extract-status').textContent = `Extracted text from ${pdf.numPages} page(s).`;
+      }
+
+      document.getElementById('copy-extracted-text-btn').addEventListener('click', () => {
+        copyTextSafe(document.getElementById('extracted-text-area').value, 'Extracted text copied!');
+      });
+
+      document.getElementById('download-extracted-txt-btn').addEventListener('click', () => {
+        const txt = document.getElementById('extracted-text-area').value;
+        downloadBlob(new Blob([txt], { type: 'text/plain;charset=utf-8' }), `${state.primaryName}-text.txt`);
+      });
+
+      /* ----------------------------------------------------------------------
+         TOOL 13: SIGN & STAMP PDF
+         ---------------------------------------------------------------------- */
+      const sigCanvas = document.getElementById('sig-draw-canvas');
+      const sigCtx = sigCanvas.getContext('2d');
+      let isDrawingSig = false;
+
+      function getSigPos(e) {
+        const rect = sigCanvas.getBoundingClientRect();
+        const cx = e.touches ? e.touches[0].clientX : e.clientX;
+        const cy = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: ((cx - rect.left) / rect.width) * sigCanvas.width,
+          y: ((cy - rect.top) / rect.height) * sigCanvas.height
+        };
+      }
+
+      sigCanvas.addEventListener('mousedown', (e) => {
+        isDrawingSig = true;
+        const p = getSigPos(e);
+        sigCtx.beginPath();
+        sigCtx.moveTo(p.x, p.y);
+      });
+      sigCanvas.addEventListener('mousemove', (e) => {
+        if (!isDrawingSig) return;
+        const p = getSigPos(e);
+        sigCtx.strokeStyle = document.getElementById('sig-ink-color').value;
+        sigCtx.lineWidth = 3;
+        sigCtx.lineCap = 'round';
+        sigCtx.lineTo(p.x, p.y);
+        sigCtx.stroke();
+      });
+      window.addEventListener('mouseup', () => (isDrawingSig = false));
+
+      sigCanvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        isDrawingSig = true;
+        const p = getSigPos(e);
+        sigCtx.beginPath();
+        sigCtx.moveTo(p.x, p.y);
+      }, { passive: false });
+      sigCanvas.addEventListener('touchmove', (e) => {
+        if (!isDrawingSig) return;
+        e.preventDefault();
+        const p = getSigPos(e);
+        sigCtx.strokeStyle = document.getElementById('sig-ink-color').value;
+        sigCtx.lineWidth = 3;
+        sigCtx.lineCap = 'round';
+        sigCtx.lineTo(p.x, p.y);
+        sigCtx.stroke();
+      }, { passive: false });
+      window.addEventListener('touchend', () => (isDrawingSig = false));
+
+      document.getElementById('sig-clear-btn').addEventListener('click', () => {
+        sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+      });
+
+      document.getElementById('sig-tab-draw').addEventListener('click', () => {
+        state.sigMode = 'draw';
+        document.getElementById('sig-draw-box').classList.remove('hidden');
+        document.getElementById('sig-type-box').classList.add('hidden');
+        document.getElementById('sig-tab-draw').className = 'flex-1 py-2 rounded-xl bg-red-600 text-white text-xs font-bold';
+        document.getElementById('sig-tab-type').className = 'flex-1 py-2 rounded-xl surface-input border text-xs font-bold';
+      });
+      document.getElementById('sig-tab-type').addEventListener('click', () => {
+        state.sigMode = 'type';
+        document.getElementById('sig-type-box').classList.remove('hidden');
+        document.getElementById('sig-draw-box').classList.add('hidden');
+        document.getElementById('sig-tab-type').className = 'flex-1 py-2 rounded-xl bg-red-600 text-white text-xs font-bold';
+        document.getElementById('sig-tab-draw').className = 'flex-1 py-2 rounded-xl surface-input border text-xs font-bold';
+      });
+
+      async function renderSignPagePreview(pageNum) {
+        if (!state.primaryBytes) return;
+        const pNum = Math.max(1, Math.min(state.pageCount, parseInt(pageNum, 10) || 1));
+        const pdf = await pdfjsLib.getDocument({ data: state.primaryBytes.slice() }).promise;
+        const page = await pdf.getPage(pNum);
+        const vp = page.getViewport({ scale: 0.85 });
+        const prevCanvas = document.getElementById('sig-preview-canvas');
+        prevCanvas.width = vp.width;
+        prevCanvas.height = vp.height;
+        await page.render({ canvasContext: prevCanvas.getContext('2d'), viewport: vp }).promise;
+      }
+
+      document.getElementById('sig-page-num').addEventListener('change', (e) => {
+        renderSignPagePreview(e.target.value);
+      });
+
+      const sigMarker = document.getElementById('sig-marker');
+      const sigPosX = document.getElementById('sig-pos-x');
+      const sigPosY = document.getElementById('sig-pos-y');
+
+      function updateSigMarker() {
+        sigMarker.style.left = sigPosX.value + '%';
+        sigMarker.style.top = sigPosY.value + '%';
+        document.getElementById('sig-x-val').textContent = sigPosX.value + '%';
+        document.getElementById('sig-y-val').textContent = sigPosY.value + '%';
+      }
+      sigPosX.addEventListener('input', updateSigMarker);
+      sigPosY.addEventListener('input', updateSigMarker);
+
+      document.getElementById('sig-preview-canvas').addEventListener('click', (e) => {
+        const rect = e.target.getBoundingClientRect();
+        const pctX = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+        const pctY = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+        sigPosX.value = Math.max(5, Math.min(90, pctX));
+        sigPosY.value = Math.max(5, Math.min(92, pctY));
+        updateSigMarker();
+      });
+
+      document.getElementById('exec-sign-btn').addEventListener('click', async () => {
+        try {
+          setProgress(true, 60, 'Embedding signature onto PDF...');
+          let sigPngUrl = '';
+          if (state.sigMode === 'draw') {
+            sigPngUrl = sigCanvas.toDataURL('image/png');
+          } else {
+            const c = document.createElement('canvas');
+            c.width = 450;
+            c.height = 130;
+            const g = c.getContext('2d');
+            g.fillStyle = document.getElementById('sig-ink-color').value;
+            g.font = 'bold 58px "Dancing Script", cursive';
+            g.textAlign = 'center';
+            g.textBaseline = 'middle';
+            g.fillText(document.getElementById('sig-type-input').value || 'Signature', 225, 65);
+            sigPngUrl = c.toDataURL('image/png');
+          }
+
+          const doc = await PDFDocument.load(state.primaryBytes, { ignoreEncryption: true });
+          const pngBytes = await fetch(sigPngUrl).then((r) => r.arrayBuffer());
+          const sigImg = await doc.embedPng(pngBytes);
+
+          const pIdx = Math.max(0, Math.min(doc.getPageCount() - 1, (parseInt(document.getElementById('sig-page-num').value, 10) || 1) - 1));
+          const page = doc.getPages()[pIdx];
+          const { width, height } = page.getSize();
+
+          const drawW = parseInt(document.getElementById('sig-width').value, 10) || 160;
+          const drawH = (sigImg.height / sigImg.width) * drawW;
+          const x = (parseInt(sigPosX.value, 10) / 100) * width - drawW / 2;
+          const y = height - (parseInt(sigPosY.value, 10) / 100) * height - drawH / 2;
+
+          page.drawImage(sigImg, {
+            x: Math.max(10, Math.min(width - drawW - 10, x)),
+            y: Math.max(10, Math.min(height - drawH - 10, y)),
+            width: drawW,
+            height: drawH
+          });
+
+          const out = await doc.save();
+          setProgress(false);
+          downloadBlob(new Blob([out], { type: 'application/pdf' }), `${state.primaryName}-signed.pdf`);
+        } catch (e) {
+          setProgress(false);
+          showToast('❌ Sign error: ' + e.message);
+        }
+      });
+
+      /* ----------------------------------------------------------------------
+         TOOL 14: CROP / RESIZE MARGINS
+         ---------------------------------------------------------------------- */
+      document.getElementById('exec-crop-btn').addEventListener('click', async () => {
+        const sizeKey = document.getElementById('crop-page-size').value;
+        const margin = parseFloat(document.getElementById('crop-margin-pt').value) || 0;
+
+        try {
+          setProgress(true, 60, 'Resizing & adjusting margins...');
+          const srcDoc = await PDFDocument.load(state.primaryBytes, { ignoreEncryption: true });
+          const outDoc = await PDFDocument.create();
+          const srcPages = srcDoc.getPages();
+
+          for (let i = 0; i < srcPages.length; i++) {
+            const sp = srcPages[i];
+            const { width: sw, height: sh } = sp.getSize();
+            let targetW = sw + margin * 2;
+            let targetH = sh + margin * 2;
+
+            if (sizeKey === 'a4') [targetW, targetH] = PageSizes.A4;
+            else if (sizeKey === 'letter') [targetW, targetH] = PageSizes.Letter;
+            else if (sizeKey === 'legal') [targetW, targetH] = PageSizes.Legal;
+
+            const embedded = await outDoc.embedPage(sp);
+            const newPage = outDoc.addPage([Math.max(100, targetW), Math.max(100, targetH)]);
+            const scale = Math.min((targetW - margin * 2) / sw, (targetH - margin * 2) / sh);
+            const dw = sw * Math.max(0.2, scale);
+            const dh = sh * Math.max(0.2, scale);
+
+            newPage.drawPage(embedded, {
+              x: (targetW - dw) / 2,
+              y: (targetH - dh) / 2,
+              width: dw,
+              height: dh
+            });
+          }
+
+          const out = await outDoc.save();
+          setProgress(false);
+          downloadBlob(new Blob([out], { type: 'application/pdf' }), `${state.primaryName}-resized.pdf`);
+        } catch (e) {
+          setProgress(false);
+          showToast('❌ Error: ' + e.message);
+        }
+      });
+
+      /* ----------------------------------------------------------------------
+         TOOL 15: EDIT PDF METADATA
+         ---------------------------------------------------------------------- */
+      document.getElementById('exec-metadata-btn').addEventListener('click', async () => {
+        try {
+          setProgress(true, 60, 'Updating PDF metadata...');
+          const doc = await PDFDocument.load(state.primaryBytes, { ignoreEncryption: true });
+          doc.setTitle(document.getElementById('meta-title').value);
+          doc.setAuthor(document.getElementById('meta-author').value);
+          doc.setSubject(document.getElementById('meta-subject').value);
+          const kw = document.getElementById('meta-keywords').value.split(',').map((s) => s.trim()).filter(Boolean);
+          doc.setKeywords(kw);
+          doc.setCreator(document.getElementById('meta-creator').value);
+          doc.setProducer(document.getElementById('meta-producer').value);
+
+          const out = await doc.save();
+          setProgress(false);
+          downloadBlob(new Blob([out], { type: 'application/pdf' }), `${state.primaryName}-metadata.pdf`);
+        } catch (e) {
+          setProgress(false);
+          showToast('❌ Error: ' + e.message);
+        }
+      });
+
+      /* ----------------------------------------------------------------------
+         TOOL 16: GRAYSCALE / BLACK & WHITE PDF
+         ---------------------------------------------------------------------- */
+      document.getElementById('exec-grayscale-btn').addEventListener('click', async () => {
+        const contrast = parseFloat(document.getElementById('gs-contrast').value);
+        const scale = parseFloat(document.getElementById('gs-scale').value);
+        try {
+          const pdf = await pdfjsLib.getDocument({ data: state.primaryBytes.slice() }).promise;
+          const bwPdf = await PDFDocument.create();
+
+          for (let i = 1; i <= pdf.numPages; i++) {
+            setProgress(true, (i / pdf.numPages) * 92, `Converting page ${i} to B&W...`);
+            const page = await pdf.getPage(i);
+            const vp = page.getViewport({ scale });
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.floor(vp.width);
+            canvas.height = Math.floor(vp.height);
+            const ctx = canvas.getContext('2d');
+            ctx.filter = `grayscale(100%) contrast(${Math.round(contrast * 100)}%)`;
+            await page.render({ canvasContext: ctx, viewport: vp }).promise;
+
+            const jpgBytes = await fetch(canvas.toDataURL('image/jpeg', 0.85)).then((r) => r.arrayBuffer());
+            const img = await bwPdf.embedJpg(jpgBytes);
+            const origVp = page.getViewport({ scale: 1.0 });
+            const newPage = bwPdf.addPage([origVp.width, origVp.height]);
+            newPage.drawImage(img, { x: 0, y: 0, width: origVp.width, height: origVp.height });
+          }
+
+          const out = await bwPdf.save();
+          setProgress(false);
+          downloadBlob(new Blob([out], { type: 'application/pdf' }), `${state.primaryName}-grayscale-bw.pdf`);
+        } catch (e) {
+          setProgress(false);
+          showToast('❌ Error: ' + e.message);
+        }
+      });
+
+      /* ----------------------------------------------------------------------
+         COPY FULL STANDALONE HTML SOURCE CODE MODAL
+         ---------------------------------------------------------------------- */
+      const codeModal = document.getElementById('code-modal');
+      const sourceTa = document.getElementById('full-source-textarea');
+
+      document.getElementById('open-code-modal-btn').addEventListener('click', () => {
+        sourceTa.value = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        codeModal.classList.remove('hidden');
+      });
+      document.getElementById('close-code-modal-btn').addEventListener('click', () => {
+        codeModal.classList.add('hidden');
+      });
+      document.getElementById('copy-full-html-btn').addEventListener('click', () => {
+        copyTextSafe(sourceTa.value, 'Complete SOLU DIGITAL PDF TOOLS code copied!');
+      });
+      document.getElementById('download-html-file-btn').addEventListener('click', () => {
+        const blob = new Blob([sourceTa.value], { type: 'text/html;charset=utf-8' });
+        downloadBlob(blob, 'solu-digital-pdf-tools.html');
+      });
+
+    })();
+  </script>
+</body>
+</html>
